@@ -231,6 +231,100 @@
             gap: 12px;
         }
 
+        /* Minimal Professional Directions Panel */
+        .directions-panel {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 0;
+            margin-top: 12px;
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            display: none;
+        }
+
+        .directions-header {
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .directions-header h4 {
+            font-size: 0.8rem;
+            color: #1e293b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .directions-header h4 i {
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .direction-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.78rem;
+            color: #334155;
+            transition: background 0.15s;
+        }
+
+        .direction-step:last-child {
+            border-bottom: none;
+        }
+
+        .direction-step:hover {
+            background: #f8fafc;
+        }
+
+        .step-indicator {
+            min-width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+            flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-icon {
+            color: #64748b;
+            font-size: 0.85rem;
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .step-text {
+            flex: 1;
+            line-height: 1.4;
+            color: #334155;
+        }
+
+        .step-distance {
+            color: #94a3b8;
+            font-weight: 500;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
         .footer {
             text-align: center;
             padding: 0.8rem;
@@ -243,11 +337,11 @@
             body {
                 padding: 20px;
             }
-            
+
             .flex-dashboard {
                 flex-direction: row;
             }
-            
+
             .input-area {
                 order: 1;
                 flex: 1.2;
@@ -255,33 +349,37 @@
                 margin: 1.5rem 0 1.5rem 1.8rem;
                 padding: 1.5rem;
             }
-            
+
             .map-area {
                 order: 2;
                 flex: 2.2;
                 min-width: 350px;
                 margin: 1.5rem 1.8rem 1.5rem 0.8rem;
             }
-            
+
             #map {
                 height: 460px;
             }
-            
+
             .header h1 {
                 font-size: 1.6rem;
             }
-            
+
             .header h1 i {
                 font-size: 2rem;
             }
-            
+
             .btn-predict {
                 padding: 14px;
                 font-size: 1rem;
             }
-            
+
             .live-info p {
                 font-size: 0.85rem;
+            }
+            
+            .directions-panel {
+                max-height: 350px;
             }
         }
 
@@ -289,15 +387,16 @@
             body {
                 padding: 8px;
             }
-            
-            .input-area, .map-area {
+
+            .input-area,
+            .map-area {
                 margin: 0.8rem;
             }
-            
+
             .map-area {
                 margin-bottom: 0;
             }
-            
+
             .input-area {
                 margin-top: 0.8rem;
                 margin-bottom: 0.8rem;
@@ -308,12 +407,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
+
         .leaflet-routing-container {
             max-height: 200px;
             overflow-y: auto;
         }
-        
+
         @media (max-width: 600px) {
             .leaflet-control-routing {
                 max-width: 250px;
@@ -322,574 +421,776 @@
     </style>
 </head>
 <body>
-<div class="main-card">
-    <div class="header">
-        <h1>
-            <i class="fas fa-brain"></i> 
-            Intelligent Traffic Congestion Prediction & Route Optimization
-        </h1>
-    </div>
-
-    <div class="flex-dashboard">
-        <div class="input-area">
-            <div class="input-group">
-                <label><i class="fas fa-map-pin"></i> Source Location</label>
-                <input type="text" id="source" placeholder="e.g., Koramangala, Bangalore">
-            </div>
-            <div class="input-group">
-                <label><i class="fas fa-location-dot"></i> Destination</label>
-                <input type="text" id="destination" placeholder="e.g., Indiranagar, Bangalore">
-            </div>
-
-            <div class="live-info" id="liveInfoBox">
-                <p><i class="fas fa-clock"></i> <span id="timeText">Detecting current time...</span></p>
-                <p><i class="fas fa-cloud-sun"></i> <span id="weatherText">Fetching live weather...</span></p>
-            </div>
-
-            <button class="btn-predict" id="predictBtn">
-                <i class="fas fa-chart-line"></i> Find Multiple Routes
-            </button>
-
-            <!-- Multiple Routes Section -->
-            <div id="routesContainer" style="margin-top: 12px; display: none;">
-                <h4 style="font-size: 0.85rem; margin-bottom: 8px;"><i class="fas fa-code-branch"></i> Multiple Route Options</h4>
-                <div id="routeOptions"></div>
-            </div>
-
-            <div id="resultPanel" class="result-box" style="display: none;">
-                <h4><i class="fas fa-microchip"></i> AI Prediction Result</h4>
-                <div id="congestionLevelDiv"></div>
-                <div class="info-row"><span><i class="fas fa-road"></i> Selected Route Distance:</span><span id="distValue">-- km</span></div>
-                <div class="info-row"><span><i class="fas fa-hourglass"></i> Travel Time:</span><span id="timeValue">-- min</span></div>
-                <div id="routeMsg" style="background:#eef2ff; padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 0.8rem;"></div>
-            </div>
+    <div class="main-card">
+        <div class="header">
+            <h1>
+                <i class="fas fa-brain"></i>
+                Intelligent Traffic Congestion Prediction & Route Optimization
+            </h1>
         </div>
 
-        <div class="map-area">
-            <div id="map"></div>
+        <div class="flex-dashboard">
+            <div class="input-area">
+                <div class="input-group">
+                    <label><i class="fas fa-map-pin"></i> Source Location</label>
+                    <input type="text" id="source" placeholder="e.g., Christ University, Bangalore">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-location-dot"></i> Destination</label>
+                    <input type="text" id="destination" placeholder="e.g., Indiranagar, Bangalore">
+                </div>
+
+                <div class="live-info" id="liveInfoBox">
+                    <p><i class="fas fa-clock"></i> <span id="timeText">Detecting current time...</span></p>
+                    <p><i class="fas fa-cloud-sun"></i> <span id="weatherText">Fetching live weather...</span></p>
+                </div>
+
+                <button class="btn-predict" id="predictBtn">
+                    <i class="fas fa-chart-line"></i> Find Multiple Routes
+                </button>
+
+                <!-- Multiple Routes Section -->
+                <div id="routesContainer" style="margin-top: 12px; display: none;">
+                    <h4 style="font-size: 0.85rem; margin-bottom: 8px;"><i class="fas fa-code-branch"></i> Multiple Route Options</h4>
+                    <div id="routeOptions"></div>
+                </div>
+
+                <!-- Minimal Professional Directions Panel -->
+                <div class="directions-panel" id="directionsPanel">
+                    <div class="directions-header">
+                        <h4><i class="fas fa-route"></i> Directions</h4>
+                    </div>
+                    <div id="directionsList"></div>
+                </div>
+
+                <div id="resultPanel" class="result-box" style="display: none;">
+                    <h4><i class="fas fa-microchip"></i> AI Prediction Result</h4>
+                    <div id="congestionLevelDiv"></div>
+                    <div class="info-row"><span><i class="fas fa-road"></i> Selected Route Distance:</span><span id="distValue">-- km</span></div>
+                    <div class="info-row"><span><i class="fas fa-hourglass"></i> Travel Time:</span><span id="timeValue">-- min</span></div>
+                    <div id="routeMsg" style="background:#eef2ff; padding: 10px; border-radius: 12px; margin-top: 10px; font-size: 0.8rem;"></div>
+                </div>
+            </div>
+
+            <div class="map-area">
+                <div id="map"></div>
+            </div>
+        </div>
+        <div class="footer">
+            Multiple Route Options | Click on any route to see details | Turn-by-turn directions
         </div>
     </div>
-    <div class="footer">
-        Multiple Route Options | Click on any route to see details
-    </div>
-</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
-<script>
-    // ==================== COMPREHENSIVE INDIAN CITIES DATABASE ====================
-    const indiaDB = {
-        // Bangalore Localities
-        "koramangala": { lat: 12.9279, lng: 77.6271, city: "Bangalore" },
-        "indiranagar": { lat: 12.9784, lng: 77.6408, city: "Bangalore" },
-        "jayanagar": { lat: 12.9349, lng: 77.5932, city: "Bangalore" },
-        "jp nagar": { lat: 12.9128, lng: 77.5928, city: "Bangalore" },
-        "hsr layout": { lat: 12.9120, lng: 77.6428, city: "Bangalore" },
-        "btm layout": { lat: 12.9166, lng: 77.6105, city: "Bangalore" },
-        "whitefield": { lat: 12.9698, lng: 77.7499, city: "Bangalore" },
-        "electronic city": { lat: 12.8458, lng: 77.6604, city: "Bangalore" },
-        "marathahalli": { lat: 12.9592, lng: 77.6974, city: "Bangalore" },
-        "bellandur": { lat: 12.9275, lng: 77.6765, city: "Bangalore" },
-        "malleswaram": { lat: 13.0077, lng: 77.5716, city: "Bangalore" },
-        "rajajinagar": { lat: 12.9971, lng: 77.5537, city: "Bangalore" },
-        "basavanagudi": { lat: 12.9418, lng: 77.5656, city: "Bangalore" },
-        "banashankari": { lat: 12.9249, lng: 77.5537, city: "Bangalore" },
-        "yelahanka": { lat: 13.1313, lng: 77.6160, city: "Bangalore" },
-        "hebbal": { lat: 13.0355, lng: 77.5989, city: "Bangalore" },
-        "ulsoor": { lat: 12.9807, lng: 77.6225, city: "Bangalore" },
-        "vijayanagar": { lat: 12.9584, lng: 77.5326, city: "Bangalore" },
-        "mg road bangalore": { lat: 12.9752, lng: 77.6072, city: "Bangalore" },
-        "brigade road": { lat: 12.9750, lng: 77.6068, city: "Bangalore" },
-        "manyata tech park": { lat: 13.0453, lng: 77.6047, city: "Bangalore" },
-        "bms college of engineering": { lat: 12.9418, lng: 77.5656, city: "Bangalore" },
-        "dayananda sagar college": { lat: 12.9128, lng: 77.5674, city: "Bangalore" },
-        "rv college of engineering": { lat: 12.9237, lng: 77.4983, city: "Bangalore" },
-        "christ university": { lat: 12.9342, lng: 77.6058, city: "Bangalore" },
-        "lalbagh": { lat: 12.9508, lng: 77.5848, city: "Bangalore" },
-        "cubbon park": { lat: 12.9769, lng: 77.5908, city: "Bangalore" },
-        "bangalore airport": { lat: 13.1989, lng: 77.7057, city: "Bangalore" },
-        
-        // Delhi
-        "connaught place": { lat: 28.6315, lng: 77.2167, city: "Delhi" },
-        "india gate": { lat: 28.6129, lng: 77.2295, city: "Delhi" },
-        "red fort": { lat: 28.6562, lng: 77.2410, city: "Delhi" },
-        "qutub minar": { lat: 28.5244, lng: 77.1855, city: "Delhi" },
-        "chandni chowk": { lat: 28.6558, lng: 77.2304, city: "Delhi" },
-        
-        // Mumbai
-        "marine drive": { lat: 18.9398, lng: 72.8234, city: "Mumbai" },
-        "gateway of india": { lat: 18.9220, lng: 72.8347, city: "Mumbai" },
-        "bandra": { lat: 19.0544, lng: 72.8407, city: "Mumbai" },
-        "juhu beach": { lat: 19.0880, lng: 72.8260, city: "Mumbai" },
-        
-        // Chennai
-        "marina beach": { lat: 13.0500, lng: 80.2824, city: "Chennai" },
-        "anna university": { lat: 13.0089, lng: 80.2353, city: "Chennai" },
-        
-        // Kolkata
-        "howrah bridge": { lat: 22.5854, lng: 88.3469, city: "Kolkata" },
-        "victoria memorial": { lat: 22.5448, lng: 88.3426, city: "Kolkata" },
-        
-        // Hyderabad
-        "charminar": { lat: 17.3616, lng: 78.4747, city: "Hyderabad" },
-        "hitech city": { lat: 17.4484, lng: 78.3784, city: "Hyderabad" },
-        
-        // Pune
-        "fc road pune": { lat: 18.5204, lng: 73.8567, city: "Pune" },
-        "shaniwar wada": { lat: 18.5187, lng: 73.8550, city: "Pune" }
-    };
+    <script>
+        // ==================== COMPREHENSIVE INDIAN CITIES DATABASE ====================
+        const indiaDB = {
+            // ---- CAPITAL CITIES & MAJOR CITIES ----
+            "delhi": { lat: 28.6139, lng: 77.2090, city: "Delhi" },
+            "new delhi": { lat: 28.6139, lng: 77.2090, city: "Delhi" },
+            "mumbai": { lat: 19.0760, lng: 72.8777, city: "Mumbai" },
+            "kolkata": { lat: 22.5726, lng: 88.3639, city: "Kolkata" },
+            "chennai": { lat: 13.0827, lng: 80.2707, city: "Chennai" },
+            "hyderabad": { lat: 17.3850, lng: 78.4867, city: "Hyderabad" },
+            "ahmedabad": { lat: 23.0225, lng: 72.5714, city: "Ahmedabad" },
+            "pune": { lat: 18.5204, lng: 73.8567, city: "Pune" },
+            "jaipur": { lat: 26.9124, lng: 75.7873, city: "Jaipur" },
+            "lucknow": { lat: 26.8467, lng: 80.9462, city: "Lucknow" },
+            "chandigarh": { lat: 30.7333, lng: 76.7794, city: "Chandigarh" },
+            "bhopal": { lat: 23.2599, lng: 77.4126, city: "Bhopal" },
+            "indore": { lat: 22.7196, lng: 75.8577, city: "Indore" },
+            "nagpur": { lat: 21.1458, lng: 79.0882, city: "Nagpur" },
+            "patna": { lat: 25.5941, lng: 85.1376, city: "Patna" },
+            "thiruvananthapuram": { lat: 8.5241, lng: 76.9366, city: "Thiruvananthapuram" },
+            "bhubaneswar": { lat: 20.2961, lng: 85.8245, city: "Bhubaneswar" },
+            "ranchi": { lat: 23.3441, lng: 85.3096, city: "Ranchi" },
+            "guwahati": { lat: 26.1445, lng: 91.7362, city: "Guwahati" },
+            "dehradun": { lat: 30.3165, lng: 78.0322, city: "Dehradun" },
+            "shimla": { lat: 31.1048, lng: 77.1734, city: "Shimla" },
+            "itanagar": { lat: 27.1023, lng: 93.6182, city: "Itanagar" },
+            "aizawl": { lat: 23.7271, lng: 92.7176, city: "Aizawl" },
+            "gangtok": { lat: 27.3314, lng: 88.6138, city: "Gangtok" },
+            "imphal": { lat: 24.8170, lng: 93.9368, city: "Imphal" },
+            "agartala": { lat: 23.8315, lng: 91.2868, city: "Agartala" },
+            "kohima": { lat: 25.6747, lng: 94.1086, city: "Kohima" },
+            "port blair": { lat: 11.6234, lng: 92.7265, city: "Port Blair" },
 
-    let currentMap = null;
-    let currentRouteLayers = [];
-    let currentRoutes = [];
-    let currentWeather = { condition: "clear", temp: 22, description: "Clear" };
-    let currentTimeSlot = "evening";
-    let currentCity = "India";
-    
-    const OSRM_URL = "https://router.project-osrm.org/route/v1/driving/";
+            // Bangalore Localities
+            "koramangala": { lat: 12.9279, lng: 77.6271, city: "Bangalore" },
+            "indiranagar": { lat: 12.9784, lng: 77.6408, city: "Bangalore" },
+            "jayanagar": { lat: 12.9349, lng: 77.5932, city: "Bangalore" },
+            "jp nagar": { lat: 12.9128, lng: 77.5928, city: "Bangalore" },
+            "hsr layout": { lat: 12.9120, lng: 77.6428, city: "Bangalore" },
+            "btm layout": { lat: 12.9166, lng: 77.6105, city: "Bangalore" },
+            "whitefield": { lat: 12.9698, lng: 77.7499, city: "Bangalore" },
+            "electronic city": { lat: 12.8458, lng: 77.6604, city: "Bangalore" },
+            "marathahalli": { lat: 12.9592, lng: 77.6974, city: "Bangalore" },
+            "bellandur": { lat: 12.9275, lng: 77.6765, city: "Bangalore" },
+            "malleswaram": { lat: 13.0077, lng: 77.5716, city: "Bangalore" },
+            "rajajinagar": { lat: 12.9971, lng: 77.5537, city: "Bangalore" },
+            "basavanagudi": { lat: 12.9418, lng: 77.5656, city: "Bangalore" },
+            "banashankari": { lat: 12.9249, lng: 77.5537, city: "Bangalore" },
+            "yelahanka": { lat: 13.1313, lng: 77.6160, city: "Bangalore" },
+            "hebbal": { lat: 13.0355, lng: 77.5989, city: "Bangalore" },
+            "ulsoor": { lat: 12.9807, lng: 77.6225, city: "Bangalore" },
+            "vijayanagar": { lat: 12.9584, lng: 77.5326, city: "Bangalore" },
+            "mg road bangalore": { lat: 12.9752, lng: 77.6072, city: "Bangalore" },
+            "mg road": { lat: 12.9752, lng: 77.6072, city: "Bangalore" },
+            "brigade road": { lat: 12.9750, lng: 77.6068, city: "Bangalore" },
+            "commercial street": { lat: 12.9873, lng: 77.6097, city: "Bangalore" },
+            "manyata tech park": { lat: 13.0453, lng: 77.6047, city: "Bangalore" },
+            "bagmane tech park": { lat: 12.9513, lng: 77.6822, city: "Bangalore" },
 
-    function normalizeString(str) {
-        return str.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
-    }
+            // Bangalore Colleges
+            "christ university": { lat: 12.9342, lng: 77.6058, city: "Bangalore" },
+            "rv college of engineering": { lat: 12.9237, lng: 77.4983, city: "Bangalore" },
+            "bms college of engineering": { lat: 12.9418, lng: 77.5656, city: "Bangalore" },
+            "dayananda sagar college": { lat: 12.9128, lng: 77.5674, city: "Bangalore" },
+            "pes university": { lat: 12.9348, lng: 77.5925, city: "Bangalore" },
+            "iiit bangalore": { lat: 12.9327, lng: 77.6008, city: "Bangalore" },
+            "iisc bangalore": { lat: 13.0222, lng: 77.5652, city: "Bangalore" },
+            "indian institute of science": { lat: 13.0222, lng: 77.5652, city: "Bangalore" },
+            "nimhans": { lat: 12.9416, lng: 77.6003, city: "Bangalore" },
+            "st joseph college bangalore": { lat: 12.9620, lng: 77.5966, city: "Bangalore" },
+            "mount carmel college": { lat: 12.9684, lng: 77.5918, city: "Bangalore" },
+            "jyoti nivas college": { lat: 12.9330, lng: 77.6072, city: "Bangalore" },
 
-    function findInIndiaDB(searchText) {
-        const normalized = normalizeString(searchText);
-        
-        for (const [key, value] of Object.entries(indiaDB)) {
-            if (normalized === key || normalized.includes(key) || key.includes(normalized)) {
-                currentCity = value.city;
-                return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
-            }
+            // Bangalore Tourist Spots & Landmarks
+            "lalbagh": { lat: 12.9508, lng: 77.5848, city: "Bangalore" },
+            "cubbon park": { lat: 12.9769, lng: 77.5908, city: "Bangalore" },
+            "vidhana soudha": { lat: 12.9795, lng: 77.5912, city: "Bangalore" },
+            "bangalore palace": { lat: 13.0035, lng: 77.5896, city: "Bangalore" },
+            "iskcon bangalore": { lat: 13.0094, lng: 77.5508, city: "Bangalore" },
+            "iskcon temple bangalore": { lat: 13.0094, lng: 77.5508, city: "Bangalore" },
+            "bannerghatta national park": { lat: 12.8010, lng: 77.5775, city: "Bangalore" },
+            "wonderla bangalore": { lat: 12.8395, lng: 77.4033, city: "Bangalore" },
+            "orion mall": { lat: 13.0097, lng: 77.5494, city: "Bangalore" },
+            "phoenix marketcity": { lat: 12.9782, lng: 77.6984, city: "Bangalore" },
+            "forum mall koramangala": { lat: 12.9349, lng: 77.6135, city: "Bangalore" },
+            "bangalore airport": { lat: 13.1989, lng: 77.7057, city: "Bangalore" },
+            "kempegowda airport": { lat: 13.1989, lng: 77.7057, city: "Bangalore" },
+            "majestic": { lat: 12.9767, lng: 77.5713, city: "Bangalore" },
+            "kr market": { lat: 12.9647, lng: 77.5755, city: "Bangalore" },
+            "shivajinagar": { lat: 12.9861, lng: 77.6113, city: "Bangalore" },
+            "silk board": { lat: 12.9176, lng: 77.6234, city: "Bangalore" },
+            "kengeri": { lat: 12.9136, lng: 77.4826, city: "Bangalore" },
+
+            // Delhi Landmarks
+            "connaught place": { lat: 28.6315, lng: 77.2167, city: "Delhi" },
+            "india gate": { lat: 28.6129, lng: 77.2295, city: "Delhi" },
+            "red fort": { lat: 28.6562, lng: 77.2410, city: "Delhi" },
+            "qutub minar": { lat: 28.5244, lng: 77.1855, city: "Delhi" },
+            "chandni chowk": { lat: 28.6558, lng: 77.2304, city: "Delhi" },
+
+            // Mumbai Landmarks
+            "marine drive": { lat: 18.9398, lng: 72.8234, city: "Mumbai" },
+            "gateway of india": { lat: 18.9220, lng: 72.8347, city: "Mumbai" },
+            "bandra": { lat: 19.0544, lng: 72.8407, city: "Mumbai" },
+            "juhu beach": { lat: 19.0880, lng: 72.8260, city: "Mumbai" },
+
+            // Chennai Landmarks
+            "marina beach": { lat: 13.0500, lng: 80.2824, city: "Chennai" },
+            "anna university": { lat: 13.0089, lng: 80.2353, city: "Chennai" },
+
+            // Kolkata Landmarks
+            "howrah bridge": { lat: 22.5854, lng: 88.3469, city: "Kolkata" },
+            "victoria memorial": { lat: 22.5448, lng: 88.3426, city: "Kolkata" },
+
+            // Hyderabad Landmarks
+            "charminar": { lat: 17.3616, lng: 78.4747, city: "Hyderabad" },
+            "hitech city": { lat: 17.4484, lng: 78.3784, city: "Hyderabad" },
+
+            // Pune Landmarks
+            "fc road pune": { lat: 18.5204, lng: 73.8567, city: "Pune" },
+            "shaniwar wada": { lat: 18.5187, lng: 73.8550, city: "Pune" }
+        };
+
+        let currentMap = null;
+        let currentRouteLayers = [];
+        let currentRoutes = [];
+        let currentWeather = { condition: "clear", temp: 22, description: "Clear" };
+        let currentTimeSlot = "evening";
+        let currentCity = "India";
+
+        const OSRM_URL = "https://router.project-osrm.org/route/v1/driving/";
+
+        function normalizeString(str) {
+            return str.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
         }
-        
-        const words = normalized.split(' ');
-        for (const [key, value] of Object.entries(indiaDB)) {
-            for (const word of words) {
-                if (word.length > 2 && key.includes(word)) {
+
+        function findInIndiaDB(searchText) {
+            const normalized = normalizeString(searchText);
+
+            for (const [key, value] of Object.entries(indiaDB)) {
+                if (normalized === key || normalized.includes(key) || key.includes(normalized)) {
                     currentCity = value.city;
                     return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
                 }
             }
-        }
-        
-        return { found: false };
-    }
 
-    function detectCityFromAddress(address) {
-        const lowerAddr = address.toLowerCase();
-        if (lowerAddr.includes("bangalore") || lowerAddr.includes("bengaluru")) return "Bangalore";
-        if (lowerAddr.includes("delhi")) return "Delhi";
-        if (lowerAddr.includes("mumbai")) return "Mumbai";
-        if (lowerAddr.includes("chennai")) return "Chennai";
-        if (lowerAddr.includes("kolkata")) return "Kolkata";
-        if (lowerAddr.includes("hyderabad")) return "Hyderabad";
-        if (lowerAddr.includes("pune")) return "Pune";
-        return "India";
-    }
-
-    async function geocodeAddress(address) {
-        if (!address) return null;
-        
-        const dbResult = findInIndiaDB(address);
-        if (dbResult.found) {
-            return { lat: dbResult.lat, lng: dbResult.lng, source: "india_db", city: dbResult.city };
-        }
-        
-        const detectedCity = detectCityFromAddress(address);
-        
-        try {
-            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ", " + detectedCity + ", India")}&limit=1&accept-language=en`;
-            const response = await fetch(url, {
-                headers: { 'User-Agent': 'TrafficPredictionApp/1.0' }
-            });
-            const data = await response.json();
-            if (data && data.length > 0) {
-                return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), source: "nominatim", city: detectedCity };
-            }
-        } catch(e) {}
-        
-        return null;
-    }
-
-    // Get multiple route alternatives by adding via points
-    async function getMultipleRoutes(srcCoord, destCoord) {
-        const routes = [];
-        
-        // Route 1: Direct fastest route
-        try {
-            const url1 = `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline&alternatives=true`;
-            const response1 = await fetch(url1);
-            const data1 = await response1.json();
-            
-            if (data1.code === "Ok" && data1.routes && data1.routes.length > 0) {
-                for (let i = 0; i < Math.min(data1.routes.length, 3); i++) {
-                    const route = data1.routes[i];
-                    routes.push({
-                        name: i === 0 ? "Fastest Route" : (i === 1 ? "Alternate Route 1" : "Alternate Route 2"),
-                        distance: (route.distance / 1000).toFixed(1),
-                        duration: Math.round(route.duration / 60),
-                        geometry: route.geometry,
-                        isRecommended: i === 0
-                    });
+            const words = normalized.split(' ');
+            for (const [key, value] of Object.entries(indiaDB)) {
+                for (const word of words) {
+                    if (word.length > 2 && key.includes(word)) {
+                        currentCity = value.city;
+                        return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
+                    }
                 }
             }
-        } catch(e) {}
-        
-        // If OSRM didn't return alternatives, create some via points
-        if (routes.length < 2) {
-            // Calculate midpoint and add offset for alternative routes
-            const midLat = (srcCoord.lat + destCoord.lat) / 2;
-            const midLng = (srcCoord.lng + destCoord.lng) / 2;
-            const latDiff = destCoord.lat - srcCoord.lat;
-            const lngDiff = destCoord.lng - srcCoord.lng;
-            
-            // Alternative 1: Northern bypass
-            const northPoint = { lat: midLat + latDiff * 0.3, lng: midLng - Math.abs(lngDiff) * 0.2 };
-            // Alternative 2: Southern bypass  
-            const southPoint = { lat: midLat - latDiff * 0.3, lng: midLng + Math.abs(lngDiff) * 0.2 };
-            
-            for (let i = 1; i <= 2; i++) {
-                const via = i === 1 ? northPoint : southPoint;
-                const urlVia = `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${via.lng},${via.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline`;
-                try {
-                    const viaRes = await fetch(urlVia);
-                    const viaData = await viaRes.json();
-                    if (viaData.code === "Ok" && viaData.routes && viaData.routes.length > 0) {
-                        const route = viaData.routes[0];
+
+            return { found: false };
+        }
+
+        function detectCityFromAddress(address) {
+            const lowerAddr = address.toLowerCase();
+            if (lowerAddr.includes("bangalore") || lowerAddr.includes("bengaluru")) return "Bangalore";
+            if (lowerAddr.includes("delhi")) return "Delhi";
+            if (lowerAddr.includes("mumbai")) return "Mumbai";
+            if (lowerAddr.includes("chennai")) return "Chennai";
+            if (lowerAddr.includes("kolkata")) return "Kolkata";
+            if (lowerAddr.includes("hyderabad")) return "Hyderabad";
+            if (lowerAddr.includes("pune")) return "Pune";
+            return "India";
+        }
+
+        async function geocodeAddress(address) {
+            if (!address) return null;
+
+            const dbResult = findInIndiaDB(address);
+            if (dbResult.found) {
+                return { lat: dbResult.lat, lng: dbResult.lng, source: "india_db", city: dbResult.city };
+            }
+
+            const detectedCity = detectCityFromAddress(address);
+
+            try {
+                const url =
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ", " + detectedCity + ", India")}&limit=1&accept-language=en`;
+                const response = await fetch(url, {
+                    headers: { 'User-Agent': 'TrafficPredictionApp/1.0' }
+                });
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), source: "nominatim", city: detectedCity };
+                }
+            } catch (e) {}
+
+            return null;
+        }
+
+        async function getMultipleRoutes(srcCoord, destCoord) {
+            const routes = [];
+
+            try {
+                const url1 =
+                    `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline&alternatives=true&steps=true`;
+                const response1 = await fetch(url1);
+                const data1 = await response1.json();
+
+                if (data1.code === "Ok" && data1.routes && data1.routes.length > 0) {
+                    for (let i = 0; i < Math.min(data1.routes.length, 3); i++) {
+                        const route = data1.routes[i];
                         routes.push({
-                            name: i === 1 ? "Northern Bypass" : "Southern Bypass",
+                            name: i === 0 ? "Fastest Route" : (i === 1 ? "Alternate Route 1" : "Alternate Route 2"),
                             distance: (route.distance / 1000).toFixed(1),
                             duration: Math.round(route.duration / 60),
                             geometry: route.geometry,
-                            isRecommended: false
+                            steps: route.legs && route.legs[0] ? route.legs[0].steps : [],
+                            isRecommended: i === 0
                         });
                     }
-                } catch(e) {}
+                }
+            } catch (e) {}
+
+            if (routes.length < 2) {
+                const midLat = (srcCoord.lat + destCoord.lat) / 2;
+                const midLng = (srcCoord.lng + destCoord.lng) / 2;
+                const latDiff = destCoord.lat - srcCoord.lat;
+                const lngDiff = destCoord.lng - srcCoord.lng;
+
+                const northPoint = { lat: midLat + latDiff * 0.3, lng: midLng - Math.abs(lngDiff) * 0.2 };
+                const southPoint = { lat: midLat - latDiff * 0.3, lng: midLng + Math.abs(lngDiff) * 0.2 };
+
+                for (let i = 1; i <= 2; i++) {
+                    const via = i === 1 ? northPoint : southPoint;
+                    const urlVia =
+                        `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${via.lng},${via.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline&steps=true`;
+                    try {
+                        const viaRes = await fetch(urlVia);
+                        const viaData = await viaRes.json();
+                        if (viaData.code === "Ok" && viaData.routes && viaData.routes.length > 0) {
+                            const route = viaData.routes[0];
+                            routes.push({
+                                name: i === 1 ? "Northern Bypass" : "Southern Bypass",
+                                distance: (route.distance / 1000).toFixed(1),
+                                duration: Math.round(route.duration / 60),
+                                geometry: route.geometry,
+                                steps: route.legs && route.legs[0] ? route.legs[0].steps : [],
+                                isRecommended: false
+                            });
+                        }
+                    } catch (e) {}
+                }
+            }
+
+            return routes;
+        }
+
+        function decodePolyline(encoded) {
+            if (!encoded) return [];
+            let points = [];
+            let index = 0,
+                len = encoded.length;
+            let lat = 0,
+                lng = 0;
+
+            while (index < len) {
+                let b, shift = 0,
+                    result = 0;
+                do {
+                    b = encoded.charCodeAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                lat += dlat;
+
+                shift = 0;
+                result = 0;
+                do {
+                    b = encoded.charCodeAt(index++) - 63;
+                    result |= (b & 0x1f) << shift;
+                    shift += 5;
+                } while (b >= 0x20);
+                let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                lng += dlng;
+
+                points.push([lat / 1e5, lng / 1e5]);
+            }
+            return points;
+        }
+
+        function updateTimeOfDay() {
+            const hour = new Date().getHours();
+            if (hour >= 6 && hour < 11) return "morning";
+            if (hour >= 11 && hour < 16) return "afternoon";
+            if (hour >= 16 && hour < 20) return "evening";
+            return "night";
+        }
+
+        async function fetchRealWeather(city = "India") {
+            const cityCoords = {
+                "Bangalore": { lat: 12.9716, lon: 77.5946 },
+                "Delhi": { lat: 28.6139, lon: 77.2090 },
+                "Mumbai": { lat: 19.0760, lon: 72.8777 },
+                "Chennai": { lat: 13.0827, lon: 80.2707 },
+                "Kolkata": { lat: 22.5726, lon: 88.3639 },
+                "Hyderabad": { lat: 17.3850, lon: 78.4867 },
+                "India": { lat: 20.5937, lon: 78.9629 }
+            };
+            const coord = cityCoords[city] || cityCoords["India"];
+
+            try {
+                const weatherRes = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&current_weather=true`
+                );
+                const weatherData = await weatherRes.json();
+                if (weatherData.current_weather) {
+                    const w = weatherData.current_weather;
+                    let condition = "clear";
+                    const code = w.weathercode;
+                    if (code === 0) condition = "clear";
+                    else if (code <= 3) condition = "cloudy";
+                    else if (code >= 45 && code <= 48) condition = "foggy";
+                    else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) condition = "rainy";
+
+                    currentWeather = {
+                        condition: condition,
+                        temp: Math.round(w.temperature),
+                        description: condition === "clear" ? "Clear" : (condition === "rainy" ? "Rainy" : (condition ===
+                            "foggy" ? "Foggy" : "Cloudy"))
+                    };
+                }
+            } catch (e) {
+                currentWeather = { condition: "clear", temp: 26, description: "Clear" };
             }
         }
-        
-        return routes;
-    }
 
-    function decodePolyline(encoded) {
-        if (!encoded) return [];
-        let points = [];
-        let index = 0, len = encoded.length;
-        let lat = 0, lng = 0;
-        
-        while (index < len) {
-            let b, shift = 0, result = 0;
-            do {
-                b = encoded.charCodeAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-            lat += dlat;
-            
-            shift = 0;
-            result = 0;
-            do {
-                b = encoded.charCodeAt(index++) - 63;
-                result |= (b & 0x1f) << shift;
-                shift += 5;
-            } while (b >= 0x20);
-            let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
-            lng += dlng;
-            
-            points.push([lat / 1e5, lng / 1e5]);
+        async function updateLiveInfoUI(city = "India") {
+            currentTimeSlot = updateTimeOfDay();
+            let timeDisplay = "";
+            if (currentTimeSlot === "morning") timeDisplay = "Morning (8-11 AM) - Peak";
+            else if (currentTimeSlot === "afternoon") timeDisplay = "Afternoon (11-4 PM) - Moderate";
+            else if (currentTimeSlot === "evening") timeDisplay = "Evening (4-8 PM) - Heavy Peak";
+            else timeDisplay = "Night (8 PM-6 AM) - Low";
+
+            await fetchRealWeather(city);
+
+            document.getElementById("timeText").innerHTML = `${new Date().toLocaleTimeString()} | ${timeDisplay}`;
+            document.getElementById("weatherText").innerHTML =
+                `${city}: ${currentWeather.description}, ${currentWeather.temp}°C`;
         }
-        return points;
-    }
 
-    function calculateDistance(lat1, lon1, lat2, lon2) {
-        const R = 6371;
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
+        function predictCongestionIndex(timeSlot, weatherCond, distanceKm, city) {
+            let base = 30;
+            const cityFactor = { "Bangalore": 5, "Delhi": 15, "Mumbai": 12 };
+            const extra = cityFactor[city] || 0;
 
-    function updateTimeOfDay() {
-        const hour = new Date().getHours();
-        if (hour >= 6 && hour < 11) return "morning";
-        if (hour >= 11 && hour < 16) return "afternoon";
-        if (hour >= 16 && hour < 20) return "evening";
-        return "night";
-    }
-
-    async function fetchRealWeather(city = "India") {
-        const cityCoords = {
-            "Bangalore": { lat: 12.9716, lon: 77.5946 },
-            "Delhi": { lat: 28.6139, lon: 77.2090 },
-            "Mumbai": { lat: 19.0760, lon: 72.8777 },
-            "India": { lat: 20.5937, lon: 78.9629 }
-        };
-        const coord = cityCoords[city] || cityCoords["India"];
-        
-        try {
-            const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coord.lat}&longitude=${coord.lon}&current_weather=true`);
-            const weatherData = await weatherRes.json();
-            if (weatherData.current_weather) {
-                const w = weatherData.current_weather;
-                let condition = "clear";
-                const code = w.weathercode;
-                if (code === 0) condition = "clear";
-                else if (code <= 3) condition = "cloudy";
-                else if (code >= 45 && code <= 48) condition = "foggy";
-                else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) condition = "rainy";
-                
-                currentWeather = {
-                    condition: condition,
-                    temp: Math.round(w.temperature),
-                    description: condition === "clear" ? "Clear" : (condition === "rainy" ? "Rainy" : (condition === "foggy" ? "Foggy" : "Cloudy"))
-                };
+            switch (timeSlot) {
+                case "morning":
+                    base = 65 + extra;
+                    break;
+                case "afternoon":
+                    base = 48 + extra / 2;
+                    break;
+                case "evening":
+                    base = 82 + extra;
+                    break;
+                case "night":
+                    base = 20 + extra / 3;
+                    break;
             }
-        } catch(e) {
-            currentWeather = { condition: "clear", temp: 26, description: "Clear" };
+
+            let weatherImpact = 0;
+            if (weatherCond === "rainy") weatherImpact = 22;
+            else if (weatherCond === "foggy") weatherImpact = 20;
+            else if (weatherCond === "cloudy") weatherImpact = 8;
+
+            let distanceFactor = Math.min(12, distanceKm / 2);
+            let index = base + weatherImpact + distanceFactor;
+            return Math.min(98, Math.max(5, Math.round(index)));
         }
-    }
 
-    async function updateLiveInfoUI(city = "India") {
-        currentTimeSlot = updateTimeOfDay();
-        let timeDisplay = "";
-        if (currentTimeSlot === "morning") timeDisplay = "Morning (8-11 AM) - Peak";
-        else if (currentTimeSlot === "afternoon") timeDisplay = "Afternoon (11-4 PM) - Moderate";
-        else if (currentTimeSlot === "evening") timeDisplay = "Evening (4-8 PM) - Heavy Peak";
-        else timeDisplay = "Night (8 PM-6 AM) - Low";
-        
-        await fetchRealWeather(city);
-        
-        document.getElementById("timeText").innerHTML = `${new Date().toLocaleTimeString()} | ${timeDisplay}`;
-        document.getElementById("weatherText").innerHTML = `${city}: ${currentWeather.description}, ${currentWeather.temp}°C`;
-    }
-
-    function predictCongestionIndex(timeSlot, weatherCond, distanceKm, city) {
-        let base = 30;
-        const cityFactor = { "Bangalore": 5, "Delhi": 15, "Mumbai": 12 };
-        const extra = cityFactor[city] || 0;
-        
-        switch(timeSlot) {
-            case "morning": base = 65 + extra; break;
-            case "afternoon": base = 48 + extra/2; break;
-            case "evening": base = 82 + extra; break;
-            case "night": base = 20 + extra/3; break;
+        function getCongestionDetails(index) {
+            if (index <= 40) return { level: "LOW TRAFFIC", class: "low", advice: "Traffic is light. Smooth drive expected.",
+                multiplier: 1.0 };
+            if (index <= 70) return { level: "MODERATE CONGESTION", class: "moderate",
+                advice: "Moderate delays may occur.", multiplier: 1.28 };
+            return { level: "HIGH CONGESTION", class: "high", advice: "Heavy traffic. Consider alternate route.",
+                multiplier: 1.65 };
         }
-        
-        let weatherImpact = 0;
-        if (weatherCond === "rainy") weatherImpact = 22;
-        else if (weatherCond === "foggy") weatherImpact = 20;
-        else if (weatherCond === "cloudy") weatherImpact = 8;
-        
-        let distanceFactor = Math.min(12, distanceKm / 2);
-        let index = base + weatherImpact + distanceFactor;
-        return Math.min(98, Math.max(5, Math.round(index)));
-    }
 
-    function getCongestionDetails(index) {
-        if (index <= 40) return { level: "LOW TRAFFIC", class: "low", advice: "Traffic is light! Smooth drive.", multiplier: 1.0 };
-        if (index <= 70) return { level: "MODERATE CONGESTION", class: "moderate", advice: "Moderate delays expected.", multiplier: 1.28 };
-        return { level: "HIGH CONGESTION", class: "high", advice: "Heavy traffic! Consider alternate route.", multiplier: 1.65 };
-    }
-
-    function clearRoutes() {
-        currentRouteLayers.forEach(layer => {
-            if (currentMap) currentMap.removeLayer(layer);
-        });
-        currentRouteLayers = [];
-    }
-
-    function displayRouteOnMap(route, color, isSelected = false) {
-        const points = decodePolyline(route.geometry);
-        if (points.length > 0) {
-            const line = L.polyline(points, { 
-                color: color, 
-                weight: isSelected ? 6 : 4, 
-                opacity: isSelected ? 0.9 : 0.6,
-                dashArray: isSelected ? null : '5, 8'
-            }).addTo(currentMap);
-            currentRouteLayers.push(line);
-            return line;
+        function clearRoutes() {
+            currentRouteLayers.forEach(layer => {
+                if (currentMap) currentMap.removeLayer(layer);
+            });
+            currentRouteLayers = [];
         }
-        return null;
-    }
 
-    function displayRouteOptions(routes, srcCoord, destCoord) {
-        const colors = ['#f97316', '#3b82f6', '#10b981'];
-        clearRoutes();
-        
-        // Display all routes on map
-        routes.forEach((route, index) => {
-            const color = colors[index % colors.length];
-            displayRouteOnMap(route, color, index === 0);
-        });
-        
-        // Add markers
-        currentMap.eachLayer((layer) => {
-            if (layer instanceof L.Marker && !(layer._popup && layer._popup._content?.includes("Source"))) {
-                currentMap.removeLayer(layer);
-            }
-        });
-        
-        L.marker([srcCoord.lat, srcCoord.lng]).addTo(currentMap).bindPopup("<b>📍 Source</b>");
-        L.marker([destCoord.lat, destCoord.lng]).addTo(currentMap).bindPopup("<b>🏁 Destination</b>");
-        
-        // Fit bounds to show all routes
-        const allPoints = [];
-        routes.forEach(route => {
-            const points = decodePolyline(route.geometry);
-            points.forEach(p => allPoints.push(p));
-        });
-        if (allPoints.length > 0) {
-            const bounds = L.latLngBounds(allPoints);
-            currentMap.fitBounds(bounds, { padding: [50, 50] });
-        }
-        
-        // Update route options UI
-        const routeOptionsDiv = document.getElementById("routeOptions");
-        routeOptionsDiv.innerHTML = routes.map((route, idx) => `
-            <div class="route-option" style="border-left-color: ${colors[idx % colors.length]}" onclick="selectRoute(${idx})">
-                <div class="route-name">
-                    <span>${route.name}</span>
-                    <span>${idx === 0 ? '⭐ Recommended' : ''}</span>
-                </div>
-                <div class="route-details">
-                    <span>📏 ${route.distance} km</span>
-                    <span>⏱️ ${route.duration} min</span>
-                </div>
-            </div>
-        `).join('');
-        
-        document.getElementById("routesContainer").style.display = "block";
-        
-        // Store routes for selection
-        window.currentRoutesData = routes;
-        window.currentColors = colors;
-        window.currentSrcCoord = srcCoord;
-        window.currentDestCoord = destCoord;
-    }
-
-    // Global function for route selection
-    window.selectRoute = function(routeIndex) {
-        const routes = window.currentRoutesData;
-        const colors = window.currentColors;
-        const srcCoord = window.currentSrcCoord;
-        const destCoord = window.currentDestCoord;
-        
-        if (!routes || !srcCoord) return;
-        
-        // Update UI to show selected route
-        const routeOptions = document.querySelectorAll('.route-option');
-        routeOptions.forEach((opt, idx) => {
-            if (idx === routeIndex) {
-                opt.classList.add('selected');
-            } else {
-                opt.classList.remove('selected');
-            }
-        });
-        
-        // Redraw with selected route highlighted
-        clearRoutes();
-        
-        routes.forEach((route, idx) => {
-            const color = colors[idx % colors.length];
-            const isSelected = idx === routeIndex;
+        function displayRouteOnMap(route, color, isSelected = false) {
             const points = decodePolyline(route.geometry);
             if (points.length > 0) {
-                const line = L.polyline(points, { 
-                    color: color, 
-                    weight: isSelected ? 6 : 3, 
-                    opacity: isSelected ? 0.9 : 0.4,
+                const line = L.polyline(points, {
+                    color: color,
+                    weight: isSelected ? 6 : 4,
+                    opacity: isSelected ? 0.9 : 0.6,
                     dashArray: isSelected ? null : '5, 8'
                 }).addTo(currentMap);
                 currentRouteLayers.push(line);
+                return line;
             }
+            return null;
+        }
+
+        // Get appropriate Font Awesome icon for maneuver type
+        function getManeuverIcon(maneuverType, modifier) {
+            switch(maneuverType) {
+                case "depart": return "fa-circle";
+                case "arrive": return "fa-circle-dot";
+                case "turn":
+                    if (modifier && modifier.includes("left")) return "fa-arrow-left";
+                    if (modifier && modifier.includes("right")) return "fa-arrow-right";
+                    return "fa-arrow-turn-up";
+                case "new name":
+                case "continue": return "fa-arrow-up";
+                case "roundabout":
+                case "rotary": return "fa-circle-notch";
+                case "fork": return "fa-code-branch";
+                case "merge": return "fa-down-left-and-up-right-to-center";
+                case "off ramp": return "fa-road";
+                case "end of road":
+                    if (modifier && modifier.includes("left")) return "fa-arrow-left";
+                    if (modifier && modifier.includes("right")) return "fa-arrow-right";
+                    return "fa-arrow-turn-up";
+                default: return "fa-arrow-right";
+            }
+        }
+
+        // Convert OSRM step to clean, professional direction text
+        function makeProfessionalDirection(instruction, maneuverType, modifier, name) {
+            const roadName = name || "the road";
+            
+            switch(maneuverType) {
+                case "depart":
+                    return `Start from your location and head toward ${roadName}`;
+                case "arrive":
+                    return `Arrive at your destination`;
+                case "turn":
+                    if (modifier === "left") return `Turn left onto ${roadName}`;
+                    else if (modifier === "right") return `Turn right onto ${roadName}`;
+                    else if (modifier === "slight left") return `Take a slight left onto ${roadName}`;
+                    else if (modifier === "slight right") return `Take a slight right onto ${roadName}`;
+                    else if (modifier === "sharp left") return `Take a sharp left onto ${roadName}`;
+                    else if (modifier === "sharp right") return `Take a sharp right onto ${roadName}`;
+                    else return `Turn onto ${roadName}`;
+                case "new name":
+                    return `Continue straight — road becomes ${roadName}`;
+                case "continue":
+                    return `Continue straight on ${roadName}`;
+                case "roundabout":
+                    return `At the roundabout, take the exit toward ${roadName}`;
+                case "rotary":
+                    return `At the rotary, continue onto ${roadName}`;
+                case "fork":
+                    if (modifier === "left") return `Keep left at the fork onto ${roadName}`;
+                    else if (modifier === "right") return `Keep right at the fork onto ${roadName}`;
+                    else return `At the fork, continue onto ${roadName}`;
+                case "merge":
+                    return `Merge onto ${roadName}`;
+                case "off ramp":
+                    return `Take the exit ramp toward ${roadName}`;
+                case "end of road":
+                    if (modifier === "left") return `At the end, turn left onto ${roadName}`;
+                    else if (modifier === "right") return `At the end, turn right onto ${roadName}`;
+                    else return `At the end, continue onto ${roadName}`;
+                default:
+                    return instruction;
+            }
+        }
+
+        // Display clean, minimal, professional turn-by-turn directions
+        function displayTurnByTurnDirections(steps) {
+            const directionsPanel = document.getElementById("directionsPanel");
+            const directionsList = document.getElementById("directionsList");
+
+            if (!steps || steps.length === 0) {
+                directionsList.innerHTML = `
+                    <div class="direction-step">
+                        <span class="step-indicator">—</span>
+                        <span class="step-text" style="color:#94a3b8;">Simple route — follow the main road.</span>
+                    </div>`;
+                directionsPanel.style.display = "block";
+                return;
+            }
+
+            let html = "";
+            let stepCount = 0;
+
+            steps.forEach((step) => {
+                if (!step.maneuver) return;
+                
+                stepCount++;
+                const instruction = step.maneuver.instruction || "Continue";
+                const maneuverType = step.maneuver.type || "continue";
+                const modifier = step.maneuver.modifier || "";
+                const name = step.name || "";
+                const distanceKm = step.distance / 1000;
+                
+                const directionText = makeProfessionalDirection(instruction, maneuverType, modifier, name);
+                const iconClass = getManeuverIcon(maneuverType, modifier);
+                
+                // Format distance nicely
+                let distanceText = "";
+                if (distanceKm >= 1) {
+                    distanceText = `${distanceKm.toFixed(1)} km`;
+                } else if (distanceKm >= 0.1) {
+                    distanceText = `${(distanceKm * 1000).toFixed(0)} m`;
+                } else if (distanceKm > 0 && maneuverType !== "arrive") {
+                    distanceText = `${(distanceKm * 1000).toFixed(0)} m`;
+                }
+                
+                html += `
+                    <div class="direction-step">
+                        <span class="step-indicator">${stepCount}</span>
+                        <span class="step-icon"><i class="fas ${iconClass}"></i></span>
+                        <span class="step-text">${directionText}</span>
+                        ${distanceText ? `<span class="step-distance">${distanceText}</span>` : ''}
+                    </div>
+                `;
+            });
+
+            directionsList.innerHTML = html || `
+                <div class="direction-step">
+                    <span class="step-indicator">—</span>
+                    <span class="step-text" style="color:#94a3b8;">Follow the main road to your destination.</span>
+                </div>`;
+            directionsPanel.style.display = "block";
+        }
+
+        function displayRouteOptions(routes, srcCoord, destCoord) {
+            const colors = ['#f97316', '#3b82f6', '#10b981'];
+            clearRoutes();
+
+            routes.forEach((route, index) => {
+                const color = colors[index % colors.length];
+                displayRouteOnMap(route, color, index === 0);
+            });
+
+            currentMap.eachLayer((layer) => {
+                if (layer instanceof L.Marker && !(layer._popup && layer._popup._content?.includes("Source"))) {
+                    currentMap.removeLayer(layer);
+                }
+            });
+
+            L.marker([srcCoord.lat, srcCoord.lng]).addTo(currentMap).bindPopup("<b>📍 Source</b>");
+            L.marker([destCoord.lat, destCoord.lng]).addTo(currentMap).bindPopup("<b>🏁 Destination</b>");
+
+            const allPoints = [];
+            routes.forEach(route => {
+                const points = decodePolyline(route.geometry);
+                points.forEach(p => allPoints.push(p));
+            });
+            if (allPoints.length > 0) {
+                const bounds = L.latLngBounds(allPoints);
+                currentMap.fitBounds(bounds, { padding: [50, 50] });
+            }
+
+            const routeOptionsDiv = document.getElementById("routeOptions");
+            routeOptionsDiv.innerHTML = routes.map((route, idx) => `
+                <div class="route-option" style="border-left-color: ${colors[idx % colors.length]}" onclick="selectRoute(${idx})">
+                    <div class="route-name">
+                        <span>${route.name}</span>
+                        <span>${idx === 0 ? '⭐ Recommended' : ''}</span>
+                    </div>
+                    <div class="route-details">
+                        <span>📏 ${route.distance} km</span>
+                        <span>⏱️ ${route.duration} min</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById("routesContainer").style.display = "block";
+
+            window.currentRoutesData = routes;
+            window.currentColors = colors;
+            window.currentSrcCoord = srcCoord;
+            window.currentDestCoord = destCoord;
+        }
+
+        // Global function for route selection
+        window.selectRoute = function(routeIndex) {
+            const routes = window.currentRoutesData;
+            const colors = window.currentColors;
+            const srcCoord = window.currentSrcCoord;
+            const destCoord = window.currentDestCoord;
+
+            if (!routes || !srcCoord) return;
+
+            const routeOptions = document.querySelectorAll('.route-option');
+            routeOptions.forEach((opt, idx) => {
+                if (idx === routeIndex) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+
+            clearRoutes();
+
+            routes.forEach((route, idx) => {
+                const color = colors[idx % colors.length];
+                const isSelected = idx === routeIndex;
+                const points = decodePolyline(route.geometry);
+                if (points.length > 0) {
+                    const line = L.polyline(points, {
+                        color: color,
+                        weight: isSelected ? 6 : 3,
+                        opacity: isSelected ? 0.9 : 0.4,
+                        dashArray: isSelected ? null : '5, 8'
+                    }).addTo(currentMap);
+                    currentRouteLayers.push(line);
+                }
+            });
+
+            L.marker([srcCoord.lat, srcCoord.lng]).addTo(currentMap).bindPopup("<b>📍 Source</b>");
+            L.marker([destCoord.lat, destCoord.lng]).addTo(currentMap).bindPopup("<b>🏁 Destination</b>");
+
+            const selectedRoute = routes[routeIndex];
+            const detectedCity = srcCoord.city || "India";
+            const congestionIdx = predictCongestionIndex(currentTimeSlot, currentWeather.condition, parseFloat(selectedRoute
+                .distance), detectedCity);
+            const congestionDetails = getCongestionDetails(congestionIdx);
+            const finalTime = Math.round(selectedRoute.duration * congestionDetails.multiplier);
+
+            document.getElementById("resultPanel").style.display = "block";
+            document.getElementById("distValue").innerHTML = `${selectedRoute.distance} km`;
+            document.getElementById("timeValue").innerHTML = `${finalTime} min`;
+            document.getElementById("congestionLevelDiv").innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap;">
+                    <span><strong>Congestion Index:</strong> ${congestionIdx}%</span>
+                    <span class="congestion-tag ${congestionDetails.class}">${congestionDetails.level}</span>
+                </div>
+                <div style="margin-top: 6px; font-size: 0.7rem;">📊 ${detectedCity} | ${currentTimeSlot.toUpperCase()} | ${currentWeather.condition}</div>
+            `;
+            document.getElementById("routeMsg").innerHTML = `
+                <i class="fas fa-route"></i> <strong>Recommendation:</strong> ${congestionDetails.advice}<br>
+                <i class="fas fa-cloud-moon"></i> ${detectedCity}: ${currentWeather.description} (${currentWeather.temp}°C)<br>
+                <i class="fas fa-chart-line"></i> Estimated arrival: ${finalTime} minutes
+                ${congestionIdx > 70 ? '<br><span style="color:#dc2626;">Consider alternate route</span>' : ''}
+            `;
+
+            // Display clean professional directions
+            displayTurnByTurnDirections(selectedRoute.steps);
+
+            L.popup().setLatLng(currentMap.getCenter()).setContent(`Selected: ${selectedRoute.name} | ${congestionIdx}%`)
+                .openOn(currentMap);
+            setTimeout(() => currentMap.closePopup(), 2500);
+        };
+
+        async function runFullPrediction() {
+            const source = document.getElementById("source").value.trim();
+            const dest = document.getElementById("destination").value.trim();
+
+            if (!source || !dest) {
+                alert("Please enter both source and destination!");
+                return;
+            }
+
+            const resultPanel = document.getElementById("resultPanel");
+            resultPanel.style.display = "none";
+            document.getElementById("routesContainer").style.display = "none";
+            document.getElementById("directionsPanel").style.display = "none";
+            document.getElementById("congestionLevelDiv").innerHTML =
+                "<i class='fas fa-spinner fa-pulse'></i> Finding multiple routes...";
+
+            const srcCoord = await geocodeAddress(source);
+            const destCoord = await geocodeAddress(dest);
+
+            if (!srcCoord || !destCoord) {
+                alert("Location not found. Please be more specific (e.g., 'Christ University, Bangalore')");
+                return;
+            }
+
+            const detectedCity = srcCoord.city || detectCityFromAddress(source);
+            await updateLiveInfoUI(detectedCity);
+
+            const routes = await getMultipleRoutes(srcCoord, destCoord);
+
+            if (routes.length === 0) {
+                alert("Could not find routes. Please try different locations.");
+                return;
+            }
+
+            displayRouteOptions(routes, srcCoord, destCoord);
+
+            setTimeout(() => {
+                window.selectRoute(0);
+            }, 500);
+        }
+
+        window.addEventListener("load", async () => {
+            currentMap = L.map('map').setView([12.9716, 77.5946], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(currentMap);
+
+            await updateLiveInfoUI("Bangalore");
+
+            document.getElementById("predictBtn").addEventListener("click", runFullPrediction);
+            setInterval(async () => { await updateLiveInfoUI(currentCity); }, 300000);
         });
-        
-        // Add markers
-        L.marker([srcCoord.lat, srcCoord.lng]).addTo(currentMap).bindPopup("<b>📍 Source</b>");
-        L.marker([destCoord.lat, destCoord.lng]).addTo(currentMap).bindPopup("<b>🏁 Destination</b>");
-        
-        // Update AI prediction for selected route
-        const selectedRoute = routes[routeIndex];
-        const detectedCity = srcCoord.city || "India";
-        const congestionIdx = predictCongestionIndex(currentTimeSlot, currentWeather.condition, parseFloat(selectedRoute.distance), detectedCity);
-        const congestionDetails = getCongestionDetails(congestionIdx);
-        const finalTime = Math.round(selectedRoute.duration * congestionDetails.multiplier);
-        
-        document.getElementById("resultPanel").style.display = "block";
-        document.getElementById("distValue").innerHTML = `${selectedRoute.distance} km`;
-        document.getElementById("timeValue").innerHTML = `${finalTime} min`;
-        document.getElementById("congestionLevelDiv").innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap;">
-                <span><strong>Congestion Index:</strong> ${congestionIdx}%</span>
-                <span class="congestion-tag ${congestionDetails.class}">${congestionDetails.level}</span>
-            </div>
-            <div style="margin-top: 6px; font-size: 0.7rem;">📊 ${detectedCity} | ${currentTimeSlot.toUpperCase()} | ${currentWeather.condition}</div>
-        `;
-        document.getElementById("routeMsg").innerHTML = `
-            <i class="fas fa-route"></i> <strong>Recommendation:</strong> ${congestionDetails.advice}<br>
-            <i class="fas fa-cloud-moon"></i> ${detectedCity}: ${currentWeather.description} (${currentWeather.temp}°C)<br>
-            <i class="fas fa-chart-line"></i> Estimated arrival: ${finalTime} minutes
-            ${congestionIdx > 70 ? '<br><span style="color:#dc2626;">🚀 ${selectedRoute.name} might be better</span>' : ''}
-        `;
-        
-        L.popup().setLatLng(currentMap.getCenter()).setContent(`🚦 Selected: ${selectedRoute.name} | ${congestionIdx}%`).openOn(currentMap);
-        setTimeout(() => currentMap.closePopup(), 2500);
-    };
-
-    async function runFullPrediction() {
-        const source = document.getElementById("source").value.trim();
-        const dest = document.getElementById("destination").value.trim();
-        
-        if (!source || !dest) {
-            alert("Please enter both source and destination!");
-            return;
-        }
-        
-        const resultPanel = document.getElementById("resultPanel");
-        resultPanel.style.display = "none";
-        document.getElementById("routesContainer").style.display = "none";
-        document.getElementById("congestionLevelDiv").innerHTML = "<i class='fas fa-spinner fa-pulse'></i> Finding multiple routes...";
-        
-        const srcCoord = await geocodeAddress(source);
-        const destCoord = await geocodeAddress(dest);
-        
-        if (!srcCoord || !destCoord) {
-            alert("Location not found. Please be more specific (e.g., 'Koramangala, Bangalore')");
-            return;
-        }
-        
-        const detectedCity = srcCoord.city || detectCityFromAddress(source);
-        await updateLiveInfoUI(detectedCity);
-        
-        const routes = await getMultipleRoutes(srcCoord, destCoord);
-        
-        if (routes.length === 0) {
-            alert("Could not find routes. Please try different locations.");
-            return;
-        }
-        
-        displayRouteOptions(routes, srcCoord, destCoord);
-        
-        // Auto-select first route and show prediction
-        setTimeout(() => {
-            window.selectRoute(0);
-        }, 500);
-    }
-
-    window.addEventListener("load", async () => {
-        currentMap = L.map('map').setView([12.9716, 77.5946], 12);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(currentMap);
-        
-        await updateLiveInfoUI("Bangalore");
-        
-        document.getElementById("predictBtn").addEventListener("click", runFullPrediction);
-        setInterval(async () => { await updateLiveInfoUI(currentCity); }, 300000);
-    });
-</script>
+    </script>
 </body>
 </html>
