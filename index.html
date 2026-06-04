@@ -679,8 +679,7 @@
             }
             const detectedCity = detectCityFromAddress(address);
             try {
-                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ", " + detectedCity + ", India")}&limit=1&accept-language=en`;
-                const response = await fetch(url, { headers: { 'User-Agent': 'TrafficPredictionApp/1.0' } });
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&accept-language=en`;
                 const data = await response.json();
                 if (data && data.length > 0) {
                     return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), source: "nominatim", city: detectedCity };
@@ -692,15 +691,14 @@
         async function getMultipleRoutes(srcCoord, destCoord) {
             const routes = [];
             try {
-                const url1 = `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline&alternatives=true&steps=true`;
-                const response1 = await fetch(url1);
+               const url1 = `${OSRM_URL}${srcCoord.lng},${srcCoord.lat};${destCoord.lng},${destCoord.lat}?overview=full&geometries=polyline&alternatives=3&steps=true`;
                 const data1 = await response1.json();
                 if (data1.code === "Ok" && data1.routes && data1.routes.length > 0) {
                     for (let i = 0; i < Math.min(data1.routes.length, 3); i++) {
                         const route = data1.routes[i];
                         routes.push({
                             name: i === 0 ? "Route A" : (i === 1 ? "Route B" : "Route C"),
-                            distance: (route.distance / 1000).toFixed(1),
+                            distance: (route.distance / 1000).toFixed(2),
                             duration: Math.round(route.duration / 60),
                             geometry: route.geometry,
                             steps: route.legs && route.legs[0] ? route.legs[0].steps : [],
@@ -726,7 +724,7 @@
                             const route = viaData.routes[0];
                             routes.push({
                                 name: i === 1 ? "Route B" : "Route C",
-                                distance: (route.distance / 1000).toFixed(1),
+                                distance: (route.distance / 1000).toFixed(2),
                                 duration: Math.round(route.duration / 60),
                                 geometry: route.geometry,
                                 steps: route.legs && route.legs[0] ? route.legs[0].steps : [],
@@ -814,9 +812,14 @@
         function predictCongestionIndex(timeSlot, weatherCond, distanceKm, city) {
             let base = 0;
             const cityCongestion = {
-                "Bangalore": 45, "Delhi": 50, "Mumbai": 55, "Chennai": 40,
-                "Hyderabad": 38, "Kolkata": 42, "Pune": 35
-            };
+    "Bangalore": 30,
+    "Delhi": 35,
+    "Mumbai": 38,
+    "Chennai": 25,
+    "Hyderabad": 24,
+    "Kolkata": 28,
+    "Pune": 22
+};
             base = cityCongestion[city] || 30;
             const timeMultipliers = {
                 "morning": 1.5, "afternoon": 1.1, "evening": 1.7, "night": 0.5
@@ -830,23 +833,19 @@
             return Math.min(98, Math.max(5, Math.round(base)));
         }
 
-        function calculateRealisticTime(distanceKm, durationMinutes, congestionIndex, city) {
-            const cityAvgSpeed = {
-                "Bangalore": 18, "Delhi": 20, "Mumbai": 15, "Chennai": 22,
-                "Hyderabad": 25, "Kolkata": 18, "Pune": 24
-            };
-            const avgSpeed = cityAvgSpeed[city] || 25;
-            const estimatedSignals = Math.floor(distanceKm / 1.5);
-            const signalDelayMinutes = (estimatedSignals * 0.75);
-            const travelTimeFromSpeed = (distanceKm / avgSpeed) * 60;
-            const timeWithSignals = travelTimeFromSpeed + signalDelayMinutes;
-            let congestionMultiplier = 1;
-            if (congestionIndex > 70) congestionMultiplier = 1.6;
-            else if (congestionIndex > 50) congestionMultiplier = 1.3;
-            else if (congestionIndex > 30) congestionMultiplier = 1.1;
-            const realisticTime = Math.round(timeWithSignals * congestionMultiplier);
-            return Math.max(2, realisticTime);
-        }
+       function calculateRealisticTime(distanceKm, durationMinutes, congestionIndex, city) {
+
+    let congestionMultiplier = 1;
+
+    if (congestionIndex > 70) congestionMultiplier = 1.35;
+    else if (congestionIndex > 50) congestionMultiplier = 1.18;
+    else if (congestionIndex > 30) congestionMultiplier = 1.08;
+
+    return Math.max(
+        2,
+        Math.round(durationMinutes * congestionMultiplier)
+    );
+}
 
         function getCongestionDetails(index) {
             if (index <= 30) return { level: "LOW TRAFFIC", class: "low", advice: "Light traffic. Smooth drive expected." };
