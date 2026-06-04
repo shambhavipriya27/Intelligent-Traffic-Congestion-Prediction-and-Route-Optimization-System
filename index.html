@@ -622,28 +622,48 @@
             return str.toLowerCase().trim().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ');
         }
 
-        function findInIndiaDB(searchText) {
+       function findInIndiaDB(searchText) {
             const normalized = normalizeString(searchText);
-
+    
+    // STEP 1: Check for exact key match first (highest priority)
             for (const [key, value] of Object.entries(indiaDB)) {
-                if (normalized === key || normalized.includes(key) || key.includes(normalized)) {
+                if (normalized === key) {
                     currentCity = value.city;
                     return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
-                }
-            }
-
-            const words = normalized.split(' ');
-            for (const [key, value] of Object.entries(indiaDB)) {
-                for (const word of words) {
-                    if (word.length > 2 && key.includes(word)) {
-                        currentCity = value.city;
-                        return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
-                    }
-                }
-            }
-
-            return { found: false };
         }
+    }
+    
+    // STEP 2: Check if the entire search text is contained within a key
+                for (const [key, value] of Object.entries(indiaDB)) {
+                    if (key.includes(normalized)) {
+                       currentCity = value.city;
+                        return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
+        }
+    }
+    
+    // STEP 3: Check if any key is contained within the search text
+    // Sort keys by length (longest first) to prefer more specific matches
+                const sortedKeys = Object.keys(indiaDB).sort((a, b) => b.length - a.length);
+                    for (const key of sortedKeys) {
+                    if (normalized.includes(key)) {
+                        currentCity = indiaDB[key].city;
+                        return { lat: indiaDB[key].lat, lng: indiaDB[key].lng, found: true, name: key, city: indiaDB[key].city };
+        }
+    }
+    
+    // STEP 4: Word-by-word match as last resort
+                const words = normalized.split(' ');
+                    for (const [key, value] of Object.entries(indiaDB)) {
+                          for (const word of words) {
+                            if (word.length > 2 && key.includes(word)) {
+                                currentCity = value.city;
+                                return { lat: value.lat, lng: value.lng, found: true, name: key, city: value.city };
+            }
+        }
+    }
+    
+                        return { found: false };
+}
 
         function detectCityFromAddress(address) {
             const lowerAddr = address.toLowerCase();
