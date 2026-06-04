@@ -855,44 +855,107 @@
                 `${city}: ${currentWeather.description}, ${currentWeather.temp}°C`;
         }
 
-        function predictCongestionIndex(timeSlot, weatherCond, distanceKm, city) {
-            let base = 30;
-            const cityFactor = { "Bangalore": 5, "Delhi": 15, "Mumbai": 12 };
-            const extra = cityFactor[city] || 0;
+       // Improved congestion prediction with more realistic factors
+function predictCongestionIndex(timeSlot, weatherCond, distanceKm, city) {
+    let base = 0;
+    
+    // City-specific base congestion (out of 100)
+    const cityCongestion = {
+        "Bangalore": 45,  // Consistently high traffic
+        "Delhi": 50,
+        "Mumbai": 55,
+        "Chennai": 40,
+        "Hyderabad": 38,
+        "Kolkata": 42,
+        "Pune": 35
+    };
+    
+    base = cityCongestion[city] || 30;
+    
+    // Time of day impact
+    const timeMultipliers = {
+        "morning": 1.5,    // 8-11 AM: peak office hours
+        "afternoon": 1.1,  // 11-4 PM: moderate
+        "evening": 1.7,    // 4-8 PM: worst traffic
+        "night": 0.5       // 8 PM-6 AM: light traffic
+    };
+    
+    base = Math.round(base * (timeMultipliers[timeSlot] || 1));
+    
+    // Weather impact
+    const weatherImpact = {
+        "rainy": 25,
+        "foggy": 15,
+        "cloudy": 5,
+        "clear": 0
+    };
+    base += (weatherImpact[weatherCond] || 0);
+    
+    // Short distance penalty (more signals, more stops in city)
+    if (distanceKm < 3) base += 10;      // Very short: lots of signals
+    else if (distanceKm < 7) base += 5;   // Short: still many stops
+    
+    // Long distance boost (highways, fewer stops)
+    if (distanceKm > 15) base -= 8;
+    
+    return Math.min(98, Math.max(5, Math.round(base)));
+}
 
-            switch (timeSlot) {
-                case "morning":
-                    base = 65 + extra;
-                    break;
-                case "afternoon":
-                    base = 48 + extra / 2;
-                    break;
-                case "evening":
-                    base = 82 + extra;
-                    break;
-                case "night":
-                    base = 20 + extra / 3;
-                    break;
-            }
-
-            let weatherImpact = 0;
-            if (weatherCond === "rainy") weatherImpact = 22;
-            else if (weatherCond === "foggy") weatherImpact = 20;
-            else if (weatherCond === "cloudy") weatherImpact = 8;
-
-            let distanceFactor = Math.min(12, distanceKm / 2);
-            let index = base + weatherImpact + distanceFactor;
-            return Math.min(98, Math.max(5, Math.round(index)));
-        }
+// Calculate realistic travel time based on multiple factors
+function calculateRealisticTime(distanceKm, durationMinutes, congestionIndex, city) {
+    // Base speed assumptions (km/h) for different city types
+    const cityAvgSpeed = {
+        "Bangalore": 18,   // Average 18 km/h in city traffic
+        "Delhi": 20,
+        "Mumbai": 15,
+        "Chennai": 22,
+        "Hyderabad": 25,
+        "Kolkata": 18,
+        "Pune": 24
+    };
+    
+    const avgSpeed = cityAvgSpeed[city] || 25;
+    
+    // Signal delay estimation
+    // Roughly 1 signal every 1.5 km in city, each taking ~45 seconds on average
+    const estimatedSignals = Math.floor(distanceKm / 1.5);
+    const signalDelayMinutes = (estimatedSignals * 0.75); // 45 seconds each
+    
+    // Calculate base travel time using realistic speed
+    const travelTimeFromSpeed = (distanceKm / avgSpeed) * 60;
+    
+    // Add signal delays
+    const timeWithSignals = travelTimeFromSpeed + signalDelayMinutes;
+    
+    // Apply congestion multiplier
+    let congestionMultiplier = 1;
+    if (congestionIndex > 70) congestionMultiplier = 1.6;
+    else if (congestionIndex > 50) congestionMultiplier = 1.3;
+    else if (congestionIndex > 30) congestionMultiplier = 1.1;
+    
+    const realisticTime = Math.round(timeWithSignals * congestionMultiplier);
+    
+    // Ensure minimum time (at least 2 minutes for very short distances)
+    return Math.max(2, realisticTime);
+}
 
         function getCongestionDetails(index) {
-            if (index <= 40) return { level: "LOW TRAFFIC", class: "low", advice: "Traffic is light. Smooth drive expected.",
-                multiplier: 1.0 };
-            if (index <= 70) return { level: "MODERATE CONGESTION", class: "moderate",
-                advice: "Moderate delays may occur.", multiplier: 1.28 };
-            return { level: "HIGH CONGESTION", class: "high", advice: "Heavy traffic. Consider alternate route.",
-                multiplier: 1.65 };
-        }
+    if (index <= 30) return { 
+        level: "LOW TRAFFIC", 
+        class: "low", 
+        advice: "Light traffic. Smooth drive expected."
+    };
+    if (index <= 55) return { 
+        level: "MODERATE CONGESTION", 
+        class: "moderate",
+        advice: "Moderate traffic. Some delays possible."
+    };
+    return { 
+        level: "HEAVY CONGESTION", 
+        class: "high", 
+        advice: "Heavy traffic expected. Plan accordingly."
+    };
+}
 
         function clearRoutes() {
             currentRouteLayers.forEach(layer => {
@@ -1134,7 +1197,12 @@
             const congestionIdx = predictCongestionIndex(currentTimeSlot, currentWeather.condition, parseFloat(selectedRoute
                 .distance), detectedCity);
             const congestionDetails = getCongestionDetails(congestionIdx);
-            const finalTime = Math.round(selectedRoute.duration * congestionDetails.multiplier);
+            const finalTime = calculateRealisticTime(
+    parseFloat(selectedRoute.distance), 
+    selectedRoute.duration, 
+    congestionIdx, 
+    detectedCity
+);
 
             document.getElementById("resultPanel").style.display = "block";
             document.getElementById("distValue").innerHTML = `${selectedRoute.distance} km`;
